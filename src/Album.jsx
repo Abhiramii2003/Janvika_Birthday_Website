@@ -11,7 +11,7 @@ function Album() {
     "Family Moments": "family",
     "Achan's 75th BDY": "guests",
     "Janu Alone": "janu-alone",
-    "Candid Smiles": "candid smiles",
+    "Candid Smiles": "candid-smiles",
   };
 
   const folder = folderMap[name];
