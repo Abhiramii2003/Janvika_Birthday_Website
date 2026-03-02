@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Album from "./Album";
 
 /* ======================================================
-   PUZZLE
+   PUZZLE (Mobile + Desktop Friendly)
 ====================================================== */
 function Puzzle() {
   const size = 3;
@@ -13,22 +13,21 @@ function Puzzle() {
 
   const [pieces, setPieces] = useState([]);
   const [solved, setSolved] = useState(false);
-  const [touchStart, setTouchStart] = useState(null);
+  const [touchStartPos, setTouchStartPos] = useState(null);
 
   useEffect(() => {
     createPuzzle();
   }, []);
 
+  /* ---------------- CREATE PUZZLE ---------------- */
   const createPuzzle = () => {
-    let arr = [];
-    for (let i = 0; i < size * size; i++) {
-      arr.push(i);
-    }
+    const arr = Array.from({ length: size * size }, (_, i) => i);
     arr.sort(() => Math.random() - 0.5);
     setPieces(arr);
     setSolved(false);
   };
 
+  /* ---------------- DESKTOP DRAG ---------------- */
   const handleDragStart = (e, index) => {
     e.dataTransfer.setData("pieceIndex", index);
   };
@@ -38,36 +37,75 @@ function Puzzle() {
     swapPieces(dragIndex, dropIndex);
   };
 
-  const handleTouchStart = (index) => {
-    setTouchStart(index);
+  /* ---------------- MOBILE SWIPE ---------------- */
+  const handleTouchStart = (e) => {
+    const touch = e.touches[0];
+    setTouchStartPos({ x: touch.clientX, y: touch.clientY });
   };
 
-  const handleTouchEnd = (index) => {
-    if (touchStart !== null && touchStart !== index) {
-      swapPieces(touchStart, index);
-    }
-    setTouchStart(null);
+  const handleTouchEnd = (e) => {
+    if (!touchStartPos) return;
+
+    const touch = e.changedTouches[0];
+    const endX = touch.clientX;
+    const endY = touch.clientY;
+
+    // Find the closest piece to touch end
+    const puzzlePieces = document.querySelectorAll(".piece");
+    let closestIndex = 0;
+    let minDist = Infinity;
+
+    puzzlePieces.forEach((piece, i) => {
+      const rect = piece.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dist = Math.hypot(cx - endX, cy - endY);
+
+      if (dist < minDist) {
+        minDist = dist;
+        closestIndex = i;
+      }
+    });
+
+    // Find the piece where touch started
+    let startIndex = 0;
+    puzzlePieces.forEach((piece, i) => {
+      const rect = piece.getBoundingClientRect();
+      if (
+        rect.left <= touchStartPos.x &&
+        touchStartPos.x <= rect.right &&
+        rect.top <= touchStartPos.y &&
+        touchStartPos.y <= rect.bottom
+      ) {
+        startIndex = i;
+      }
+    });
+
+    // Swap pieces if different
+    if (startIndex !== closestIndex) swapPieces(startIndex, closestIndex);
+
+    setTouchStartPos(null);
   };
 
+  /* ---------------- SWAP FUNCTION ---------------- */
   const swapPieces = (from, to) => {
     const newPieces = [...pieces];
-    [newPieces[from], newPieces[to]] = [
-      newPieces[to],
-      newPieces[from],
-    ];
+    [newPieces[from], newPieces[to]] = [newPieces[to], newPieces[from]];
     setPieces(newPieces);
     checkSolved(newPieces);
   };
 
+  /* ---------------- CHECK WIN ---------------- */
   const checkSolved = (arr) => {
     const correct = arr.every((val, i) => val === i);
     if (correct) {
       setSolved(true);
-      new Audio(winSound).play();
+      new Audio(winSound).play().catch(() => {});
       launchConfetti();
     }
   };
 
+  /* ---------------- CONFETTI ---------------- */
   const launchConfetti = () => {
     const end = Date.now() + 2000;
 
@@ -81,12 +119,13 @@ function Puzzle() {
         ["#ffb6c1", "#ffd6e0", "#ffc2d1", "#ffe5ec"][
           Math.floor(Math.random() * 4)
         ];
-
       document.body.appendChild(confetti);
+
       setTimeout(() => confetti.remove(), 2000);
     }, 50);
   };
 
+  /* ---------------- RENDER ---------------- */
   return (
     <section className="puzzle-section">
       <h2>🧩 Solve Janvika's Puzzle</h2>
@@ -101,8 +140,8 @@ function Puzzle() {
             onDragStart={(e) => handleDragStart(e, index)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => handleDrop(e, index)}
-            onTouchStart={() => handleTouchStart(index)}
-            onTouchEnd={() => handleTouchEnd(index)}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             style={{
               backgroundImage: `url(${image})`,
               backgroundPosition: `${
