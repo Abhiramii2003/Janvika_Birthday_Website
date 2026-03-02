@@ -1,32 +1,31 @@
 import { useParams, Link } from "react-router-dom";
 import { useState, useMemo } from "react";
 
-/* ======================================================
-   BASE URL (VITE PRODUCTION FIX)
-====================================================== */
 const BASE = import.meta.env.BASE_URL;
+
+/* ======================================================
+   LOAD ALL IMAGES AT BUILD TIME (VITE SAFE)
+====================================================== */
+const allImages = import.meta.glob(
+  "/public/**/*.jpg",
+  { eager: true }
+);
 
 function Album() {
   const { name } = useParams();
   const [selectedImage, setSelectedImage] = useState(null);
 
-  /* ======================================================
-     ALBUM → FOLDER MAP
-  ====================================================== */
   const folderMap = {
-    "CakeCutting": "cake-cutting",
-    "StageDecorations": "decorations",
-    "FamilyMoments": "family",
-    "Achan75thBDY": "guests",
-    "JanuAlone": "janu-alone",
-    "CandidSmiles": "candid-smiles",
+    CakeCutting: "cake-cutting",
+    StageDecorations: "decorations",
+    FamilyMoments: "family",
+    Achan75thBDY: "guests",
+    JanuAlone: "janu-alone",
+    CandidSmiles: "candid-smiles",
   };
 
   const folder = folderMap[name];
 
-  /* ======================================================
-     INVALID ALBUM
-  ====================================================== */
   if (!folder) {
     return (
       <div className="album-page">
@@ -37,23 +36,13 @@ function Album() {
   }
 
   /* ======================================================
-     GENERATE IMAGE LIST
-     (memoized → better performance)
+     FILTER ONLY CURRENT ALBUM IMAGES
   ====================================================== */
   const photos = useMemo(() => {
-    return Array.from({ length: 100 }, (_, i) =>
-      `${BASE}${folder}/photo${i + 1}.jpg`
-    );
+    return Object.keys(allImages)
+      .filter((path) => path.includes(`/public/${folder}/`))
+      .map((path) => path.replace("/public/", BASE));
   }, [folder]);
-
-  /* ======================================================
-     IMAGE ERROR HANDLER
-     (prevents console spam)
-  ====================================================== */
-  const hideBrokenImage = (e) => {
-    const card = e.currentTarget.closest(".photo-card");
-    if (card) card.remove();
-  };
 
   return (
     <div className="album-page">
@@ -64,7 +53,6 @@ function Album() {
         Beautiful memories of Janvika 💖
       </p>
 
-      {/* ================= GRID ================= */}
       <div className="photo-grid">
         {photos.map((photo, index) => (
           <div className="photo-card" key={index}>
@@ -73,7 +61,6 @@ function Album() {
               alt={`Memory ${index + 1}`}
               loading="lazy"
               onClick={() => setSelectedImage(photo)}
-              onError={hideBrokenImage}
             />
 
             <a href={photo} download className="download-btn">
@@ -83,7 +70,6 @@ function Album() {
         ))}
       </div>
 
-      {/* ================= LIGHTBOX ================= */}
       {selectedImage && (
         <div
           className="lightbox"
