@@ -1640,3 +1640,17 @@ body {
   100% { background-position: 0% 50%; }
 }
 
+.puzzle-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  max-width: 90vw;
+  margin: auto;
+}
+
+.piece {
+  width: 100%;
+  aspect-ratio: 1;
+  background-size: 360px 360px;
+  touch-action: none; /* important for pointer events */
+}

@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Album from "./Album";
 
 /* ======================================================
-   PUZZLE - Mobile & Desktop Drag
+   PUZZLE - Mobile & Desktop Drag Friendly
 ====================================================== */
 function Puzzle() {
   const size = 3;
@@ -34,28 +34,30 @@ function Puzzle() {
     setDraggingIndex(index);
   };
 
-  const handlePointerUp = (e) => {
+  const handlePointerMove = (e) => {
     if (draggingIndex === null) return;
 
-    // Find closest piece to pointer
-    const puzzlePieces = document.querySelectorAll(".piece");
-    let closestIndex = 0;
-    let minDist = Infinity;
+    const pointerX = e.clientX ?? e.touches?.[0].clientX;
+    const pointerY = e.clientY ?? e.touches?.[0].clientY;
 
+    const puzzlePieces = document.querySelectorAll(".piece");
     puzzlePieces.forEach((piece, i) => {
       const rect = piece.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const pointerX = e.clientX ?? e.touches?.[0].clientX;
-      const pointerY = e.clientY ?? e.touches?.[0].clientY;
-      const dist = Math.hypot(cx - pointerX, cy - pointerY);
-      if (dist < minDist) {
-        minDist = dist;
-        closestIndex = i;
+      // If pointer is inside another piece
+      if (
+        pointerX >= rect.left &&
+        pointerX <= rect.right &&
+        pointerY >= rect.top &&
+        pointerY <= rect.bottom &&
+        i !== draggingIndex
+      ) {
+        swapPieces(draggingIndex, i);
+        setDraggingIndex(i); // continue dragging from new position
       }
     });
+  };
 
-    if (closestIndex !== draggingIndex) swapPieces(draggingIndex, closestIndex);
+  const handlePointerUp = () => {
     setDraggingIndex(null);
   };
 
@@ -100,7 +102,12 @@ function Puzzle() {
       <h2>🧩 Solve Janvika's Puzzle</h2>
       <p>Drag on desktop & mobile 💻📱</p>
 
-      <div className="puzzle-container">
+      <div
+        className="puzzle-container"
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
         {pieces.map((piece, index) => (
           <div
             key={index}
@@ -112,8 +119,6 @@ function Puzzle() {
               }px ${-Math.floor(piece / size) * 120}px`,
             }}
             onPointerDown={(e) => handlePointerDown(e, index)}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
           />
         ))}
       </div>
