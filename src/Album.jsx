@@ -1,10 +1,18 @@
 import { useParams, Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+/* ======================================================
+   BASE URL (VITE PRODUCTION FIX)
+====================================================== */
+const BASE = import.meta.env.BASE_URL;
 
 function Album() {
   const { name } = useParams();
   const [selectedImage, setSelectedImage] = useState(null);
 
+  /* ======================================================
+     ALBUM → FOLDER MAP
+  ====================================================== */
   const folderMap = {
     "Cake Cutting": "cake-cutting",
     "Stage Decorations": "decorations",
@@ -16,7 +24,9 @@ function Album() {
 
   const folder = folderMap[name];
 
-  // If album name is wrong
+  /* ======================================================
+     INVALID ALBUM
+  ====================================================== */
   if (!folder) {
     return (
       <div className="album-page">
@@ -26,13 +36,24 @@ function Album() {
     );
   }
 
+  /* ======================================================
+     GENERATE IMAGE LIST
+     (memoized → better performance)
+  ====================================================== */
+  const photos = useMemo(() => {
+    return Array.from({ length: 100 }, (_, i) =>
+      `${BASE}${folder}/photo${i + 1}.jpg`
+    );
+  }, [folder]);
 
-
-
-  // Generate up to 100 photos automatically
-  const photos = Array.from({ length: 100 }, (_, i) =>
-    `/${folder}/photo${i + 1}.jpg`
-  );
+  /* ======================================================
+     IMAGE ERROR HANDLER
+     (prevents console spam)
+  ====================================================== */
+  const hideBrokenImage = (e) => {
+    const card = e.currentTarget.closest(".photo-card");
+    if (card) card.remove();
+  };
 
   return (
     <div className="album-page">
@@ -43,6 +64,7 @@ function Album() {
         Beautiful memories of Janvika 💖
       </p>
 
+      {/* ================= GRID ================= */}
       <div className="photo-grid">
         {photos.map((photo, index) => (
           <div className="photo-card" key={index}>
@@ -51,9 +73,7 @@ function Album() {
               alt={`Memory ${index + 1}`}
               loading="lazy"
               onClick={() => setSelectedImage(photo)}
-              onError={(e) =>
-                (e.target.closest(".photo-card").style.display = "none")
-              }
+              onError={hideBrokenImage}
             />
 
             <a href={photo} download className="download-btn">
@@ -63,6 +83,7 @@ function Album() {
         ))}
       </div>
 
+      {/* ================= LIGHTBOX ================= */}
       {selectedImage && (
         <div
           className="lightbox"
