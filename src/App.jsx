@@ -3,9 +3,6 @@ import { Routes, Route, Link } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import Album from "./Album";
 
-/* ======================================================
-   PUZZLE - Mobile & Desktop Drag Friendly
-====================================================== */
 function Puzzle() {
   const size = 3;
   const image = "/janvika.jpg";
@@ -19,7 +16,6 @@ function Puzzle() {
     createPuzzle();
   }, []);
 
-  /* ---------------- CREATE PUZZLE ---------------- */
   const createPuzzle = () => {
     const arr = Array.from({ length: size * size }, (_, i) => i);
     arr.sort(() => Math.random() - 0.5);
@@ -28,22 +24,21 @@ function Puzzle() {
     setDraggingIndex(null);
   };
 
-  /* ---------------- UNIVERSAL DRAG ---------------- */
+  // ---------------- Drag Start ----------------
   const handlePointerDown = (e, index) => {
     e.preventDefault();
     setDraggingIndex(index);
   };
 
+  // ---------------- Drag Over ----------------
   const handlePointerMove = (e) => {
     if (draggingIndex === null) return;
 
     const pointerX = e.clientX ?? e.touches?.[0].clientX;
     const pointerY = e.clientY ?? e.touches?.[0].clientY;
 
-    const puzzlePieces = document.querySelectorAll(".piece");
-    puzzlePieces.forEach((piece, i) => {
+    document.querySelectorAll(".piece").forEach((piece, i) => {
       const rect = piece.getBoundingClientRect();
-      // If pointer is inside another piece
       if (
         pointerX >= rect.left &&
         pointerX <= rect.right &&
@@ -51,8 +46,9 @@ function Puzzle() {
         pointerY <= rect.bottom &&
         i !== draggingIndex
       ) {
+        // Swap with the piece currently under finger
         swapPieces(draggingIndex, i);
-        setDraggingIndex(i); // continue dragging from new position
+        setDraggingIndex(i); // continue dragging from new piece
       }
     });
   };
@@ -61,7 +57,6 @@ function Puzzle() {
     setDraggingIndex(null);
   };
 
-  /* ---------------- SWAP FUNCTION ---------------- */
   const swapPieces = (from, to) => {
     const newPieces = [...pieces];
     [newPieces[from], newPieces[to]] = [newPieces[to], newPieces[from]];
@@ -69,17 +64,14 @@ function Puzzle() {
     checkSolved(newPieces);
   };
 
-  /* ---------------- CHECK WIN ---------------- */
   const checkSolved = (arr) => {
-    const correct = arr.every((val, i) => val === i);
-    if (correct) {
+    if (arr.every((val, i) => val === i)) {
       setSolved(true);
       new Audio(winSound).play().catch(() => {});
       launchConfetti();
     }
   };
 
-  /* ---------------- CONFETTI ---------------- */
   const launchConfetti = () => {
     const end = Date.now() + 2000;
     const interval = setInterval(() => {
@@ -96,7 +88,6 @@ function Puzzle() {
     }, 50);
   };
 
-  /* ---------------- RENDER ---------------- */
   return (
     <section className="puzzle-section">
       <h2>🧩 Solve Janvika's Puzzle</h2>
@@ -127,11 +118,7 @@ function Puzzle() {
         Shuffle 🔄
       </button>
 
-      {solved && (
-        <div className="win-message">
-          🎉 You Solved It! 💕 Amazing Job!
-        </div>
-      )}
+      {solved && <div className="win-message">🎉 You Solved It! 💕 Amazing Job!</div>}
     </section>
   );
 }
