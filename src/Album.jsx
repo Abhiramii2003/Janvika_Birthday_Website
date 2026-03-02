@@ -20,7 +20,7 @@ function Album() {
     StageDecorations: "decorations",
     FamilyMoments: "family",
     Achan75thBDY: "guests",
-    JanuAlone: "janu-alone",
+    Janu: "janu",
     CandidSmiles: "candid-smiles",
   };
 
