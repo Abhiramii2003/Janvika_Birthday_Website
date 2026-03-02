@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Album from "./Album";
 
 /* ======================================================
-   PUZZLE (Mobile + Desktop Friendly)
+   PUZZLE - Mobile & Desktop Drag
 ====================================================== */
 function Puzzle() {
   const size = 3;
@@ -13,7 +13,7 @@ function Puzzle() {
 
   const [pieces, setPieces] = useState([]);
   const [solved, setSolved] = useState(false);
-  const [touchStartPos, setTouchStartPos] = useState(null);
+  const [draggingIndex, setDraggingIndex] = useState(null);
 
   useEffect(() => {
     createPuzzle();
@@ -25,32 +25,19 @@ function Puzzle() {
     arr.sort(() => Math.random() - 0.5);
     setPieces(arr);
     setSolved(false);
+    setDraggingIndex(null);
   };
 
-  /* ---------------- DESKTOP DRAG ---------------- */
-  const handleDragStart = (e, index) => {
-    e.dataTransfer.setData("pieceIndex", index);
+  /* ---------------- UNIVERSAL DRAG ---------------- */
+  const handlePointerDown = (e, index) => {
+    e.preventDefault();
+    setDraggingIndex(index);
   };
 
-  const handleDrop = (e, dropIndex) => {
-    const dragIndex = e.dataTransfer.getData("pieceIndex");
-    swapPieces(dragIndex, dropIndex);
-  };
+  const handlePointerUp = (e) => {
+    if (draggingIndex === null) return;
 
-  /* ---------------- MOBILE SWIPE ---------------- */
-  const handleTouchStart = (e) => {
-    const touch = e.touches[0];
-    setTouchStartPos({ x: touch.clientX, y: touch.clientY });
-  };
-
-  const handleTouchEnd = (e) => {
-    if (!touchStartPos) return;
-
-    const touch = e.changedTouches[0];
-    const endX = touch.clientX;
-    const endY = touch.clientY;
-
-    // Find the closest piece to touch end
+    // Find closest piece to pointer
     const puzzlePieces = document.querySelectorAll(".piece");
     let closestIndex = 0;
     let minDist = Infinity;
@@ -59,32 +46,17 @@ function Puzzle() {
       const rect = piece.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      const dist = Math.hypot(cx - endX, cy - endY);
-
+      const pointerX = e.clientX ?? e.touches?.[0].clientX;
+      const pointerY = e.clientY ?? e.touches?.[0].clientY;
+      const dist = Math.hypot(cx - pointerX, cy - pointerY);
       if (dist < minDist) {
         minDist = dist;
         closestIndex = i;
       }
     });
 
-    // Find the piece where touch started
-    let startIndex = 0;
-    puzzlePieces.forEach((piece, i) => {
-      const rect = piece.getBoundingClientRect();
-      if (
-        rect.left <= touchStartPos.x &&
-        touchStartPos.x <= rect.right &&
-        rect.top <= touchStartPos.y &&
-        touchStartPos.y <= rect.bottom
-      ) {
-        startIndex = i;
-      }
-    });
-
-    // Swap pieces if different
-    if (startIndex !== closestIndex) swapPieces(startIndex, closestIndex);
-
-    setTouchStartPos(null);
+    if (closestIndex !== draggingIndex) swapPieces(draggingIndex, closestIndex);
+    setDraggingIndex(null);
   };
 
   /* ---------------- SWAP FUNCTION ---------------- */
@@ -108,10 +80,8 @@ function Puzzle() {
   /* ---------------- CONFETTI ---------------- */
   const launchConfetti = () => {
     const end = Date.now() + 2000;
-
     const interval = setInterval(() => {
       if (Date.now() > end) return clearInterval(interval);
-
       const confetti = document.createElement("div");
       confetti.className = "burst-confetti";
       confetti.style.left = Math.random() * 100 + "vw";
@@ -120,7 +90,6 @@ function Puzzle() {
           Math.floor(Math.random() * 4)
         ];
       document.body.appendChild(confetti);
-
       setTimeout(() => confetti.remove(), 2000);
     }, 50);
   };
@@ -129,25 +98,22 @@ function Puzzle() {
   return (
     <section className="puzzle-section">
       <h2>🧩 Solve Janvika's Puzzle</h2>
-      <p>Drag on desktop 💻 | Swipe on mobile 📱</p>
+      <p>Drag on desktop & mobile 💻📱</p>
 
       <div className="puzzle-container">
         {pieces.map((piece, index) => (
           <div
             key={index}
             className="piece"
-            draggable
-            onDragStart={(e) => handleDragStart(e, index)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, index)}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
             style={{
               backgroundImage: `url(${image})`,
               backgroundPosition: `${
                 -(piece % size) * 120
               }px ${-Math.floor(piece / size) * 120}px`,
             }}
+            onPointerDown={(e) => handlePointerDown(e, index)}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
           />
         ))}
       </div>
