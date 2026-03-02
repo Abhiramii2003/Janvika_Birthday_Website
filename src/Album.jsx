@@ -14,12 +14,12 @@ function Album() {
      ALBUM → FOLDER MAP
   ====================================================== */
   const folderMap = {
-    "Cake Cutting": "cake-cutting",
-    "Stage Decorations": "decorations",
-    "Family Moments": "family",
-    "Achan's 75th BDY": "guests",
-    "Janu Alone": "janu-alone",
-    "Candid Smiles": "candid-smiles",
+    "CakeCutting": "cake-cutting",
+    "StageDecorations": "decorations",
+    "FamilyMoments": "family",
+    "Achan75thBDY": "guests",
+    "JanuAlone": "janu-alone",
+    "CandidSmiles": "candid-smiles",
   };
 
   const folder = folderMap[name];

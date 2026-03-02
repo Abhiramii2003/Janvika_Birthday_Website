@@ -3,14 +3,10 @@ import { Routes, Route, Link } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
 import Album from "./Album";
 
-/* ======================================================
-   GLOBAL BASE URL (FIXES VERCEL ASSET PATHS)
-====================================================== */
+
 const BASE = import.meta.env.BASE_URL;
 
-/* ======================================================
-   PUZZLE
-====================================================== */
+
 function Puzzle() {
   const size = 3;
   const image = `${BASE}janvika.jpg`;
@@ -264,22 +260,22 @@ function Home() {
         <h2>Beautiful Moments</h2>
 
         <div className="albums">
-          <Link to="/album/Cake Cutting" className="album-card">
+          <Link to="/album/CakeCutting" className="album-card">
             Cake Cutting 🎂
           </Link>
-          <Link to="/album/Family Moments" className="album-card">
+          <Link to="/album/FamilyMoments" className="album-card">
             Family Moments 💖
           </Link>
-          <Link to="/album/Janu Alone" className="album-card">
+          <Link to="/album/JanuAlone" className="album-card">
             Janu Alone 🌸
           </Link>
-          <Link to="/album/Candid Smiles" className="album-card">
+          <Link to="/album/CandidSmiles" className="album-card">
             Candid Smiles 😊
           </Link>
-          <Link to="/album/Stage Decorations" className="album-card">
+          <Link to="/album/StageDecorations" className="album-card">
             Stage Decorations 🎀
           </Link>
-          <Link to="/album/Achan's 75th BDY" className="album-card">
+          <Link to="/album/Achan75thBDY" className="album-card">
             Achan's 75th BDY ✨
           </Link>
         </div>
