@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import Album from "./Album";
 
 
-const BASE = import.meta.env.BASE_URL;
+const BASE = "/";
 
 
 function Puzzle() {

@@ -12,7 +12,7 @@ const allImages = import.meta.glob(
 );
 
 function Album() {
-  const { name } = useParams();
+ const { name } = useParams();
   const [selectedImage, setSelectedImage] = useState(null);
 
   const folderMap = {
